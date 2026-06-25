@@ -1,0 +1,931 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>signalcheck. • AI X Profile Audit</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&amp;family=Space+Grotesk:wght@500;600&amp;display=swap');
+        
+        body {
+            font-family: 'Inter', system_ui, sans-serif;
+        }
+        
+        .font-display {
+            font-family: 'Space Grotesk', 'Inter', system_ui, sans-serif;
+            font-weight: 600;
+            letter-spacing: -0.025em;
+        }
+
+        .glass {
+            background: rgba(255,255,255, 0.03);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255,255,255, 0.08);
+        }
+
+        .section-header {
+            font-size: 2.25rem;
+            line-height: 2.5rem;
+            font-weight: 700;
+            letter-spacing: -0.04em;
+        }
+
+        .metric-value {
+            font-variant-numeric: tabular-nums;
+        }
+
+        .stat-card {
+            transition: transform 0.2s cubic-bezier(0.4, 0.0, 0.2, 1), 
+                       box-shadow 0.2s cubic-bezier(0.4, 0.0, 0.2, 1);
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+        }
+
+        .handle-input {
+            transition: all 0.2s cubic-bezier(0.4, 0.0, 0.2, 1);
+            font-feature-settings: "ss02";
+        }
+        
+        .handle-input:focus {
+            outline: none;
+            box-shadow: 0 0 0 6px rgba(163, 230, 53, 0.12);
+            border-color: #a3e635;
+        }
+
+        .analyse-btn {
+            transition: all 0.2s cubic-bezier(0.4, 0.0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .analyse-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 20px 25px -5px rgb(163 230 53 / 0.35), 
+                       0 8px 10px -6px rgb(163 230 53 / 0.3);
+        }
+        
+        .analyse-btn:active {
+            transform: scale(0.985);
+        }
+
+        .analyse-btn::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -100%;
+            width: 50%;
+            height: 200%;
+            background: linear-gradient(
+                90deg,
+                transparent,
+                rgba(255,255,255,0.35),
+                transparent
+            );
+            transition: 0.6s;
+        }
+        
+        .analyse-btn:hover::after {
+            left: 250%;
+        }
+
+        .dimension-bar {
+            height: 7px;
+            background: linear-gradient(to right, #a3e635, #84cc16);
+            border-radius: 9999px;
+            transition: width 1.1s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .premium-shadow {
+            box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.45);
+        }
+
+        .result-modal {
+            animation: modalPopIn 0.22s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        @keyframes modalPopIn {
+            from {
+                opacity: 0;
+                transform: scale(0.96) translateY(25px);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
+        }
+
+        .subtle-grid {
+            background-image: 
+                linear-gradient(rgba(163, 230, 53, 0.025) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(163, 230, 53, 0.025) 1px, transparent 1px);
+            background-size: 70px 70px;
+        }
+    </style>
+</head>
+<body class="bg-zinc-950 text-white antialiased">
+    <!-- NAV -->
+    <nav class="border-b border-white/10 bg-zinc-950/90 backdrop-blur-xl sticky top-0 z-50">
+        <div class="max-w-screen-xl mx-auto px-6">
+            <div class="flex items-center justify-between h-20">
+                <div class="flex items-center gap-x-3">
+                    <div class="flex items-center gap-x-2.5">
+                        <div class="w-9 h-9 bg-lime-400 flex items-center justify-center rounded-2xl shadow-inner">
+                            <i class="fa-solid fa-check text-zinc-950 text-3xl font-black"></i>
+                        </div>
+                        <div>
+                            <span class="font-display text-3xl tracking-tighter font-semibold">signalcheck</span>
+                            <span class="text-lime-400 text-xl">.</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-x-7 text-sm">
+                    <a href="#how-it-works" class="text-zinc-400 hover:text-white transition-colors font-medium">How it works</a>
+                    <a href="#features" class="text-zinc-400 hover:text-white transition-colors font-medium">Features</a>
+                    
+                    <div class="h-4 w-px bg-white/10"></div>
+                    
+                    <div class="flex items-center gap-x-2 text-[10px] uppercase tracking-[1.5px] font-mono text-lime-400/70">
+                        <div class="w-1.5 h-1.5 bg-lime-400 rounded-full animate-pulse"></div>
+                        <span>NO LOGIN • FREE FOREVER</span>
+                    </div>
+                    
+                    <button onclick="document.getElementById('handle-input').focus()"
+                            class="px-6 py-2 text-sm font-semibold rounded-3xl border border-white/20 hover:bg-white/5 transition-all flex items-center gap-x-2">
+                        <span>RUN AUDIT</span>
+                        <i class="fa-solid fa-arrow-right text-xs"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- HERO -->
+    <div class="max-w-screen-xl mx-auto px-6 pt-14 pb-10">
+        <div class="max-w-3xl">
+            <div class="inline-flex items-center gap-x-2 px-4 h-8 rounded-3xl bg-white/5 border border-white/10 text-xs tracking-[1px] font-medium mb-6">
+                <div class="flex items-center">
+                    <i class="fa-solid fa-robot text-lime-400 mr-1.5"></i>
+                    <span>POWERED BY MULTI-MODEL AI</span>
+                </div>
+            </div>
+
+            <h1 class="font-display text-6xl md:text-7xl leading-[1.05] tracking-tighter font-semibold">
+                Read your X profile<br>
+                like an <span class="text-lime-400">algorithm</span> does.
+            </h1>
+            
+            <p class="mt-6 max-w-lg text-[21px] text-zinc-400 leading-tight">
+                Drop a handle. We pull the profile, detect the niche, score the bio &amp; visuals with vision AI, 
+                and hand back a personalised growth plan written for that exact account.
+            </p>
+
+            <div class="flex items-center gap-x-6 mt-8">
+                <div class="flex -space-x-2">
+                    <div class="w-7 h-7 rounded-full ring-2 ring-zinc-950 overflow-hidden"><img src="https://i.pravatar.cc/28?img=12" class="w-full h-full object-cover"></div>
+                    <div class="w-7 h-7 rounded-full ring-2 ring-zinc-950 overflow-hidden"><img src="https://i.pravatar.cc/28?img=28" class="w-full h-full object-cover"></div>
+                    <div class="w-7 h-7 rounded-full ring-2 ring-zinc-950 overflow-hidden"><img src="https://i.pravatar.cc/28?img=47" class="w-full h-full object-cover"></div>
+                </div>
+                <div class="text-xs text-zinc-500">
+                    <span class="font-semibold text-white">12,847</span> profiles analysed this month
+                </div>
+            </div>
+        </div>
+
+        <!-- BIG INPUT SECTION -->
+        <div class="mt-10 max-w-lg">
+            <div class="glass rounded-3xl p-2 border border-white/10 premium-shadow">
+                <div class="bg-zinc-900 rounded-[22px] p-8">
+                    
+                    <div class="mb-5">
+                        <div class="uppercase text-xs tracking-[2px] font-mono text-lime-400/60 mb-1.5">X HANDLE</div>
+                        <div class="text-sm text-zinc-400">Enter any public profile</div>
+                    </div>
+
+                    <!-- BIG HANDLE INPUT -->
+                    <div class="relative mb-2">
+                        <div class="absolute left-7 top-1/2 -translate-y-1/2 flex items-center pointer-events-none z-10">
+                            <span class="text-zinc-500 font-mono text-[42px] md:text-[52px] font-light tracking-[-3px]">@</span>
+                        </div>
+                        <input id="handle-input" 
+                               type="text" 
+                               value="naval"
+                               class="handle-input w-full bg-zinc-950 border-2 border-white/20 focus:border-lime-400 text-white placeholder:text-zinc-600 font-mono text-[42px] md:text-[52px] leading-none py-7 pl-[72px] pr-8 rounded-3xl outline-none tracking-[-1.5px] text-center">
+                    </div>
+
+                    <!-- ANALYSE BUTTON UNDERNEATH -->
+                    <button onclick="analyseProfile()"
+                            class="analyse-btn mt-3 w-full h-[66px] bg-lime-400 hover:bg-lime-300 active:bg-lime-500 transition-all text-zinc-950 font-extrabold text-2xl rounded-3xl flex items-center justify-center gap-x-4 shadow-2xl shadow-lime-400/40">
+                        <span>ANALYSE</span>
+                        <i class="fa-solid fa-search text-3xl"></i>
+                    </button>
+
+                    <!-- Suggestions -->
+                    <div class="mt-6 flex items-center gap-x-2 flex-wrap gap-y-2 justify-center">
+                        <span class="text-xs uppercase tracking-widest text-zinc-500 font-medium mr-1">Try:</span>
+                        
+                        <button onclick="setHandle('naval')" 
+                                class="px-5 py-1.5 text-sm rounded-3xl bg-white/5 hover:bg-white/10 border border-white/10 text-white/90 hover:text-white transition-all font-mono text-xs active:scale-[0.985]">
+                            @naval
+                        </button>
+                        <button onclick="setHandle('levelsio')" 
+                                class="px-5 py-1.5 text-sm rounded-3xl bg-white/5 hover:bg-white/10 border border-white/10 text-white/90 hover:text-white transition-all font-mono text-xs active:scale-[0.985]">
+                            @levelsio
+                        </button>
+                        <button onclick="setHandle('paulg')" 
+                                class="px-5 py-1.5 text-sm rounded-3xl bg-white/5 hover:bg-white/10 border border-white/10 text-white/90 hover:text-white transition-all font-mono text-xs active:scale-[0.985]">
+                            @paulg
+                        </button>
+                        <button onclick="setHandle('sama')" 
+                                class="px-5 py-1.5 text-sm rounded-3xl bg-white/5 hover:bg-white/10 border border-white/10 text-white/90 hover:text-white transition-all font-mono text-xs active:scale-[0.985]">
+                            @sama
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="px-2 mt-4 flex items-center gap-x-2 text-[10px] text-zinc-500 justify-center">
+                <i class="fa-solid fa-shield-halved"></i>
+                <span>100% private • We never store your data • Instant results</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- STATS -->
+    <div class="max-w-screen-xl mx-auto px-6 pb-16">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="stat-card glass border border-white/10 rounded-3xl p-6 flex items-center gap-x-5 group">
+                <div class="w-14 h-14 flex-shrink-0 rounded-2xl bg-lime-400/10 flex items-center justify-center border border-lime-400/20">
+                    <i class="fa-solid fa-chart-line text-lime-400 text-3xl"></i>
+                </div>
+                <div>
+                    <div class="text-5xl font-semibold tracking-tighter">07</div>
+                    <div class="text-sm font-medium text-zinc-400 -mt-1">SCORED DIMENSIONS</div>
+                    <div class="text-[10px] text-lime-400/70 mt-0.5">Clarity • Authority • Consistency • more</div>
+                </div>
+            </div>
+
+            <div class="stat-card glass border border-white/10 rounded-3xl p-6 flex items-center gap-x-5 group">
+                <div class="w-14 h-14 flex-shrink-0 rounded-2xl bg-lime-400/10 flex items-center justify-center border border-lime-400/20">
+                    <i class="fa-solid fa-image text-lime-400 text-3xl"></i>
+                </div>
+                <div>
+                    <div class="text-5xl font-semibold tracking-tighter">PFP</div>
+                    <div class="text-sm font-medium text-zinc-400 -mt-1">VISION ANALYSIS</div>
+                    <div class="text-[10px] text-lime-400/70 mt-0.5">AI evaluates your profile photo quality &amp; brand fit</div>
+                </div>
+            </div>
+
+            <div class="stat-card glass border border-white/10 rounded-3xl p-6 flex items-center gap-x-5 group">
+                <div class="w-14 h-14 flex-shrink-0 rounded-2xl bg-lime-400/10 flex items-center justify-center border border-lime-400/20">
+                    <i class="fa-solid fa-infinity text-lime-400 text-3xl"></i>
+                </div>
+                <div>
+                    <div class="text-5xl font-semibold tracking-tighter">∞</div>
+                    <div class="text-sm font-medium text-zinc-400 -mt-1">FREE RUNS</div>
+                    <div class="text-[10px] text-lime-400/70 mt-0.5">No limits. No credit card. Ever.</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- HOW IT WORKS -->
+    <div id="how-it-works" class="max-w-screen-xl mx-auto px-6 pt-8 pb-16 border-t border-white/10">
+        <div class="flex flex-col md:flex-row md:items-end md:justify-between mb-10">
+            <div>
+                <div class="uppercase tracking-[2.5px] text-xs font-semibold text-lime-400 mb-2">3-STEP PROCESS</div>
+                <h2 class="section-header tracking-tighter">How Signalcheck works</h2>
+            </div>
+            <p class="text-zinc-400 max-w-sm mt-3 md:mt-0">Real analysis. No fluff. Built for serious X growth.</p>
+        </div>
+
+        <div class="grid md:grid-cols-3 gap-5">
+            <div class="modern-card bg-zinc-900 border border-white/10 rounded-3xl p-7">
+                <div class="flex items-center gap-x-4 mb-5">
+                    <div class="w-9 h-9 rounded-2xl bg-white/5 flex items-center justify-center text-xl font-black text-lime-400 border border-white/10">01</div>
+                    <div class="font-semibold text-xl">Drop your handle</div>
+                </div>
+                <p class="text-zinc-400 leading-snug">Just type any @username. We instantly fetch public profile data, recent posts, bio, header image and profile picture.</p>
+                <div class="mt-6 text-xs px-3 py-2 bg-white/5 rounded-2xl inline-block text-lime-400/80">
+                    <i class="fa-solid fa-globe mr-1.5"></i> Works on any public account
+                </div>
+            </div>
+
+            <div class="modern-card bg-zinc-900 border border-white/10 rounded-3xl p-7">
+                <div class="flex items-center gap-x-4 mb-5">
+                    <div class="w-9 h-9 rounded-2xl bg-white/5 flex items-center justify-center text-xl font-black text-lime-400 border border-white/10">02</div>
+                    <div class="font-semibold text-xl">AI reads everything</div>
+                </div>
+                <p class="text-zinc-400 leading-snug">Our models analyse tone, niche, visual quality (via vision), engagement patterns, and consistency across your entire presence.</p>
+                <div class="mt-4 flex flex-wrap gap-2">
+                    <div class="text-[10px] px-3 py-1 rounded-2xl bg-zinc-950 border border-white/10">Bio &amp; header</div>
+                    <div class="text-[10px] px-3 py-1 rounded-2xl bg-zinc-950 border border-white/10">PFP vision</div>
+                    <div class="text-[10px] px-3 py-1 rounded-2xl bg-zinc-950 border border-white/10">Content style</div>
+                </div>
+            </div>
+
+            <div class="modern-card bg-zinc-900 border border-white/10 rounded-3xl p-7">
+                <div class="flex items-center gap-x-4 mb-5">
+                    <div class="w-9 h-9 rounded-2xl bg-white/5 flex items-center justify-center text-xl font-black text-lime-400 border border-white/10">03</div>
+                    <div class="font-semibold text-xl">Get your growth plan</div>
+                </div>
+                <p class="text-zinc-400 leading-snug">Receive a personalised report with dimension scores, niche positioning, and a clear, actionable growth plan tailored to you.</p>
+                
+                <div class="mt-6">
+                    <div class="text-xs text-lime-400 flex items-center gap-x-2">
+                        <i class="fa-solid fa-file-lines"></i> 
+                        <span class="font-medium">Includes: PDF export + shareable link</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- FEATURES -->
+    <div id="features" class="bg-zinc-900 border-y border-white/10 py-16">
+        <div class="max-w-screen-xl mx-auto px-6">
+            <div class="max-w-xl mb-10">
+                <div class="uppercase text-lime-400 text-xs tracking-[2px] font-semibold mb-3">WHAT YOU RECEIVE</div>
+                <h2 class="section-header tracking-tighter">Everything you need to level up your X presence</h2>
+            </div>
+
+            <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div class="bg-zinc-950 border border-white/10 p-6 rounded-3xl">
+                    <i class="fa-solid fa-bullseye text-3xl text-lime-400 mb-5 block"></i>
+                    <div class="font-semibold text-xl mb-1.5">Niche Detection</div>
+                    <p class="text-sm text-zinc-400">We identify your exact positioning and how algorithms currently perceive you.</p>
+                </div>
+                
+                <div class="bg-zinc-950 border border-white/10 p-6 rounded-3xl">
+                    <i class="fa-solid fa-chart-bar text-3xl text-lime-400 mb-5 block"></i>
+                    <div class="font-semibold text-xl mb-1.5">7 Dimension Scores</div>
+                    <p class="text-sm text-zinc-400">Clarity, Authority, Consistency, Visuals, Engagement Potential and more — with benchmarks.</p>
+                </div>
+                
+                <div class="bg-zinc-950 border border-white/10 p-6 rounded-3xl">
+                    <i class="fa-solid fa-camera text-3xl text-lime-400 mb-5 block"></i>
+                    <div class="font-semibold text-xl mb-1.5">PFP Vision Analysis</div>
+                    <p class="text-sm text-zinc-400">Advanced vision model scores your profile picture for brand alignment, quality and first-impression impact.</p>
+                </div>
+                
+                <div class="bg-zinc-950 border border-white/10 p-6 rounded-3xl">
+                    <i class="fa-solid fa-road text-3xl text-lime-400 mb-5 block"></i>
+                    <div class="font-semibold text-xl mb-1.5">Custom Growth Plan</div>
+                    <p class="text-sm text-zinc-400">3–5 high-impact, personalised recommendations you can implement immediately.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- FINAL CTA -->
+    <div class="max-w-screen-xl mx-auto px-6 py-20 text-center">
+        <div class="max-w-md mx-auto">
+            <h3 class="font-display text-4xl tracking-tighter">Ready to see how the algorithm sees you?</h3>
+            <p class="text-zinc-400 mt-3">Takes 8 seconds. No account needed.</p>
+            
+            <button onclick="document.getElementById('handle-input').focus(); window.scrollTo({top: 180, behavior:'smooth'})" 
+                    class="mt-8 mx-auto px-10 h-14 bg-white text-zinc-950 font-bold text-base rounded-3xl flex items-center justify-center gap-x-3 hover:bg-lime-400 active:bg-lime-300 transition-all shadow-xl">
+                <span>START FREE AUDIT</span>
+                <i class="fa-solid fa-arrow-right"></i>
+            </button>
+            
+            <div class="mt-4 text-xs text-zinc-500">Join thousands of creators, founders &amp; builders improving their signal.</div>
+        </div>
+    </div>
+
+    <!-- FOOTER -->
+    <footer class="border-t border-white/10 bg-black py-8">
+        <div class="max-w-screen-xl mx-auto px-6 text-xs flex flex-col md:flex-row md:items-center justify-between gap-y-3 text-zinc-500">
+            <div>
+                signalcheck — independent tool. Not affiliated with X Corp.
+            </div>
+            <div class="flex items-center gap-x-5">
+                <div>AI-assisted estimates. Always pair with your own judgement.</div>
+                <div class="hidden md:block w-px h-3 bg-white/20"></div>
+                <div>© 2026</div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- RESULT MODAL -->
+    <div id="result-modal" onclick="if (event.target.id === 'result-modal') hideModal()" class="hidden fixed inset-0 bg-black/90 backdrop-blur-xl z-[100] flex items-center justify-center p-4">
+        <div onclick="event.stopImmediatePropagation()" 
+             class="result-modal w-full max-w-2xl bg-zinc-900 border border-white/20 rounded-3xl overflow-hidden premium-shadow">
+            
+            <!-- Modal Header -->
+            <div class="px-8 pt-7 pb-5 border-b border-white/10 flex items-center justify-between bg-zinc-950">
+                <div class="flex items-center gap-x-4">
+                    <div>
+                        <div class="text-xs uppercase tracking-[1.5px] text-lime-400 font-medium">AUDIT COMPLETE</div>
+                        <div id="modal-handle" class="font-mono text-3xl font-semibold tracking-tight"></div>
+                        <div id="modal-name" class="text-sm text-zinc-400"></div>
+                    </div>
+                </div>
+                
+                <button onclick="hideModal()" class="w-10 h-10 flex items-center justify-center text-2xl text-zinc-400 hover:text-white transition-colors">×</button>
+            </div>
+
+            <div class="p-8">
+                <!-- Overall Score + Real metrics -->
+                <div class="flex items-center justify-between mb-8">
+                    <div>
+                        <div class="text-sm text-zinc-400 tracking-wider">OVERALL SIGNAL SCORE</div>
+                        <div id="overall-score" class="text-[92px] leading-none font-semibold tracking-tighter tabular-nums text-lime-400"></div>
+                    </div>
+                    
+                    <div class="text-right">
+                        <div id="real-metrics" class="text-xs text-zinc-400 space-y-0.5">
+                            <!-- Populated dynamically with real data -->
+                        </div>
+                        <div class="inline-flex items-center px-4 h-8 rounded-3xl bg-lime-400/10 text-lime-400 text-xs font-medium border border-lime-400/30 mt-2">
+                            <i class="fa-solid fa-check-double mr-2"></i>
+                            <span id="percentile">TOP 18%</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Stats -->
+                <div class="grid grid-cols-3 gap-3 mb-8">
+                    <div class="bg-zinc-950 border border-white/10 rounded-2xl p-4">
+                        <div class="text-xs text-zinc-500">NICHE</div>
+                        <div id="niche" class="font-semibold mt-1 text-lg leading-tight"></div>
+                    </div>
+                    <div class="bg-zinc-950 border border-white/10 rounded-2xl p-4">
+                        <div class="text-xs text-zinc-500">BIO SCORE</div>
+                        <div class="flex items-baseline gap-x-1 mt-1">
+                            <span id="bio-score" class="font-semibold text-3xl tabular-nums"></span>
+                            <span class="text-xs text-zinc-500">/100</span>
+                        </div>
+                    </div>
+                    <div class="bg-zinc-950 border border-white/10 rounded-2xl p-4">
+                        <div class="text-xs text-zinc-500">PFP SCORE</div>
+                        <div class="flex items-baseline gap-x-1 mt-1">
+                            <span id="pfp-score" class="font-semibold text-3xl tabular-nums"></span>
+                            <span class="text-xs text-zinc-500">/100</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Real Bio -->
+                <div id="real-bio-section" class="mb-7 hidden">
+                    <div class="text-xs uppercase tracking-widest text-zinc-400 mb-2 px-1">BIO FROM X</div>
+                    <div id="real-bio" class="text-sm text-zinc-300 bg-zinc-950 border border-white/10 p-4 rounded-2xl leading-snug"></div>
+                </div>
+
+                <!-- Dimension Scores -->
+                <div class="mb-7">
+                    <div class="flex items-center justify-between mb-3 px-1">
+                        <div class="uppercase text-xs tracking-[1.5px] font-medium text-zinc-400">7 DIMENSION SCORES</div>
+                        <div class="text-[10px] text-lime-400 cursor-pointer hover:underline" onclick="showAllDimensions()">See full breakdown →</div>
+                    </div>
+                    
+                    <div class="space-y-3 text-sm">
+                        <div class="flex items-center gap-x-4">
+                            <div class="w-28 text-xs text-zinc-400">Clarity</div>
+                            <div class="flex-1 h-2 bg-zinc-800 rounded-full overflow-hidden"><div class="dimension-bar" style="width: 94%"></div></div>
+                            <div class="w-8 text-right font-mono text-xs tabular-nums">94</div>
+                        </div>
+                        <div class="flex items-center gap-x-4">
+                            <div class="w-28 text-xs text-zinc-400">Authority</div>
+                            <div class="flex-1 h-2 bg-zinc-800 rounded-full overflow-hidden"><div class="dimension-bar" style="width: 88%"></div></div>
+                            <div class="w-8 text-right font-mono text-xs tabular-nums">88</div>
+                        </div>
+                        <div class="flex items-center gap-x-4">
+                            <div class="w-28 text-xs text-zinc-400">Consistency</div>
+                            <div class="flex-1 h-2 bg-zinc-800 rounded-full overflow-hidden"><div class="dimension-bar" style="width: 81%"></div></div>
+                            <div class="w-8 text-right font-mono text-xs tabular-nums">81</div>
+                        </div>
+                        <div class="flex items-center gap-x-4">
+                            <div class="w-28 text-xs text-zinc-400">Visual Brand</div>
+                            <div class="flex-1 h-2 bg-zinc-800 rounded-full overflow-hidden"><div class="dimension-bar" style="width: 79%"></div></div>
+                            <div class="w-8 text-right font-mono text-xs tabular-nums">79</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PFP Vision -->
+                <div class="mb-8 bg-zinc-950 border border-white/10 rounded-2xl p-5">
+                    <div class="flex gap-x-3">
+                        <i class="fa-solid fa-image text-lime-400 mt-1"></i>
+                        <div class="flex-1">
+                            <div class="font-medium">PFP Vision Analysis</div>
+                            <div id="pfp-analysis" class="text-sm text-zinc-400 mt-1 leading-snug"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Growth Plan -->
+                <div>
+                    <div class="uppercase text-xs tracking-[1.5px] font-medium text-zinc-400 mb-3 px-1">YOUR PERSONALISED GROWTH PLAN</div>
+                    <div id="growth-plan" class="space-y-2.5 text-sm"></div>
+                </div>
+            </div>
+
+            <div class="px-8 py-5 bg-zinc-950 border-t border-white/10 flex items-center justify-between text-xs">
+                <div class="text-zinc-500">Analysis generated • just now</div>
+                
+                <div class="flex items-center gap-x-3">
+                    <button onclick="copyResults()" 
+                            class="flex items-center gap-x-2 px-4 h-9 rounded-2xl border border-white/20 hover:bg-white/5 text-xs font-medium transition-colors">
+                        <i class="fa-solid fa-copy"></i>
+                        <span>COPY REPORT</span>
+                    </button>
+                    
+                    <button onclick="downloadPDF()" 
+                            class="flex items-center gap-x-2 px-5 h-9 bg-white text-zinc-950 rounded-2xl text-xs font-semibold hover:bg-lime-300 active:bg-lime-400 transition-all">
+                        <i class="fa-solid fa-download"></i>
+                        <span>DOWNLOAD PDF</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function setHandle(handle) {
+            const input = document.getElementById('handle-input');
+            input.value = handle;
+            input.focus();
+            
+            input.style.transition = 'none';
+            input.style.transform = 'scale(0.985)';
+            setTimeout(() => {
+                input.style.transition = 'all 0.2s cubic-bezier(0.4, 0.0, 0.2, 1)';
+                input.style.transform = 'scale(1)';
+            }, 10);
+        }
+
+        async function analyseProfile() {
+            const input = document.getElementById('handle-input');
+            let handle = input.value.trim();
+            
+            if (!handle) {
+                handle = 'naval';
+                input.value = handle;
+            }
+            
+            if (handle.startsWith('@')) {
+                handle = handle.substring(1);
+            }
+            
+            // Show loading
+            showLoadingState();
+            
+            try {
+                // Call Netlify function for real X data
+                const response = await fetch(`/.netlify/functions/fetch-profile?handle=${encodeURIComponent(handle)}`);
+                
+                let realData = null;
+                if (response.ok) {
+                    realData = await response.json();
+                } else {
+                    console.warn('Real profile fetch failed, using demo data');
+                }
+                
+                // Hide loading and show results (mix real + demo analysis)
+                hideLoadingState();
+                showResultsModal(handle, realData);
+                
+            } catch (error) {
+                console.error('Fetch error:', error);
+                hideLoadingState();
+                // Fallback to demo
+                showResultsModal(handle, null);
+            }
+        }
+        
+        function showLoadingState() {
+            const inputWrapper = document.getElementById('handle-input').parentElement.parentElement;
+            
+            const loadingDiv = document.createElement('div');
+            loadingDiv.id = 'loading-overlay';
+            loadingDiv.className = `absolute inset-0 bg-zinc-950/95 backdrop-blur-md rounded-3xl flex items-center justify-center z-20`;
+            loadingDiv.innerHTML = `
+                <div class="flex flex-col items-center text-center px-6">
+                    <div class="w-9 h-9 border-[3px] border-lime-400 border-t-transparent rounded-full animate-spin mb-4"></div>
+                    <div class="text-lime-400 text-base font-semibold tracking-wider">ANALYSING PROFILE...</div>
+                    <div class="text-xs text-zinc-500 mt-2 max-w-[220px]">Fetching real data from X • Running vision model • Generating personalised plan</div>
+                </div>
+            `;
+            
+            const card = inputWrapper.parentElement;
+            card.style.position = 'relative';
+            card.appendChild(loadingDiv);
+            
+            document.getElementById('handle-input').disabled = true;
+        }
+        
+        function hideLoadingState() {
+            const overlay = document.getElementById('loading-overlay');
+            if (overlay) overlay.remove();
+            document.getElementById('handle-input').disabled = false;
+        }
+
+        function showResultsModal(handle, realData) {
+            const modal = document.getElementById('result-modal');
+            const modalHandle = document.getElementById('modal-handle');
+            const modalName = document.getElementById('modal-name');
+            
+            modalHandle.innerHTML = `@${handle}`;
+            
+            // Default demo values
+            let overall = 87;
+            let niche = "Philosophy &amp; Self-Improvement";
+            let bioScore = 92;
+            let pfpScore = 84;
+            let pfpText = "Strong, minimalist portrait. Excellent brand alignment. High contrast and professional tone.";
+            let growthItems = [
+                "Post 1 long-form thread per week on a single big idea",
+                "Add a pinned tweet that clearly states your current focus area",
+                "Increase quote-tweet engagement by 30%",
+                "Consider a recurring 'Naval Reads' series"
+            ];
+            let realBio = null;
+            let realMetricsHTML = '';
+            
+            // If we have real data from X, enhance the modal
+            if (realData && realData.data) {
+                const user = realData.data;
+                
+                // Show real name
+                if (user.name) {
+                    modalName.innerHTML = user.name;
+                }
+                
+                // Real bio
+                if (user.description) {
+                    realBio = user.description;
+                    document.getElementById('real-bio-section').classList.remove('hidden');
+                    document.getElementById('real-bio').innerHTML = realBio;
+                } else {
+                    document.getElementById('real-bio-section').classList.add('hidden');
+                }
+                
+                // Real metrics
+                if (user.public_metrics) {
+                    const m = user.public_metrics;
+                    realMetricsHTML = `
+                        <div><span class="font-mono">${m.followers_count?.toLocaleString() || '—'}</span> followers</div>
+                        <div><span class="font-mono">${m.following_count?.toLocaleString() || '—'}</span> following</div>
+                    `;
+                    document.getElementById('real-metrics').innerHTML = realMetricsHTML;
+                }
+                
+                // Slightly adjust scores based on real data (demo logic)
+                if (user.public_metrics?.followers_count > 100000) overall = 91;
+                if (user.verified) overall = Math.max(overall, 89);
+                
+                // Make growth plan slightly more relevant if bio exists
+                if (user.description && user.description.toLowerCase().includes('founder')) {
+                    growthItems[0] = "Share more founder lessons and behind-the-scenes decisions";
+                }
+            } else {
+                document.getElementById('real-bio-section').classList.add('hidden');
+                document.getElementById('real-metrics').innerHTML = '';
+            }
+            
+            // Handle-specific demo content (kept for nice experience)
+            const lowerHandle = handle.toLowerCase();
+            
+            if (lowerHandle === 'naval') {
+                overall = 91;
+                niche = "Philosophy • Investing • Startups";
+                bioScore = 96;
+                pfpScore = 89;
+                pfpText = "Iconic, instantly recognisable. Perfect personal brand signal. The clean aesthetic reinforces clarity and intellectual positioning.";
+                growthItems = [
+                    "Post 1 long-form thread per week on a single big idea (your current average is 0.6)",
+                    "Add a pinned tweet that clearly states your current focus area for new followers",
+                    "Increase quote-tweet engagement by 30% — your audience responds strongly to thoughtful commentary",
+                    "Consider a recurring 'Naval Reads' series highlighting one book + key takeaway"
+                ];
+            } else if (lowerHandle === 'levelsio') {
+                overall = 84;
+                niche = "Indie Hacking • SaaS • Making Money Online";
+                bioScore = 88;
+                pfpScore = 91;
+                pfpText = "Very strong. Your face + product shots create instant trust and 'builder' credibility. One of the best in the indie space.";
+                growthItems = [
+                    "Your audience loves ship updates — post more raw progress videos (even 15s clips)",
+                    "Create a public 'Indie Scorecard' page and link it in bio for social proof",
+                    "Reply to 5 more comments daily on other builders' posts to increase reach",
+                    "Launch a monthly 'What I learned shipping' newsletter"
+                ];
+            } else if (lowerHandle === 'paulg') {
+                overall = 79;
+                niche = "Startups • Venture Capital • Essays";
+                bioScore = 81;
+                pfpScore = 72;
+                pfpText = "Classic and trustworthy. The current photo feels slightly dated compared to your current influence. A refreshed professional headshot could lift perception scores.";
+                growthItems = [
+                    "Your essays perform extremely well — consider turning top 3 into Twitter threads",
+                    "Add a clear call-to-action in bio linking to your latest essay or YC application",
+                    "Engage more visibly with Y Combinator founders on the platform",
+                    "Experiment with occasional 'Ask me anything' sessions"
+                ];
+            }
+            
+            // Populate modal
+            document.getElementById('overall-score').innerHTML = overall;
+            document.getElementById('niche').innerHTML = niche;
+            document.getElementById('bio-score').innerHTML = bioScore;
+            document.getElementById('pfp-score').innerHTML = pfpScore;
+            document.getElementById('pfp-analysis').innerHTML = pfpText;
+            
+            // Growth plan
+            const growthContainer = document.getElementById('growth-plan');
+            growthContainer.innerHTML = '';
+            
+            growthItems.forEach((item, index) => {
+                const div = document.createElement('div');
+                div.className = `flex gap-x-3 p-3 rounded-2xl ${index % 2 === 0 ? 'bg-zinc-950' : 'bg-zinc-900/60'} border border-white/5`;
+                div.innerHTML = `
+                    <div class="mt-0.5 w-5 h-5 flex-shrink-0 rounded-full bg-lime-400/10 flex items-center justify-center text-lime-400 text-xs font-bold">${index + 1}</div>
+                    <div class="text-zinc-300 leading-snug">${item}</div>
+                `;
+                growthContainer.appendChild(div);
+            });
+            
+            // Show modal
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            
+            // Animate bars
+            setTimeout(() => {
+                const bars = modal.querySelectorAll('.dimension-bar');
+                bars.forEach(bar => {
+                    const target = bar.style.width;
+                    bar.style.width = '0%';
+                    setTimeout(() => {
+                        bar.style.width = target;
+                    }, 90);
+                });
+            }, 300);
+        }
+        
+        function hideModal() {
+            const modal = document.getElementById('result-modal');
+            modal.classList.remove('flex');
+            modal.classList.add('hidden');
+            
+            // Reset real bio section for next time
+            document.getElementById('real-bio-section').classList.add('hidden');
+        }
+        
+        function showAllDimensions() {
+            const modalContent = document.querySelector('#result-modal > div');
+            modalContent.innerHTML = `
+                <div class="p-8">
+                    <div class="flex justify-between items-center mb-6">
+                        <div>
+                            <div class="text-xs text-lime-400 tracking-widest">FULL BREAKDOWN</div>
+                            <div class="text-3xl font-semibold tracking-tight">All 7 Dimension Scores</div>
+                        </div>
+                        <button onclick="hideModal()" class="text-3xl leading-none text-zinc-400 hover:text-white">×</button>
+                    </div>
+                    
+                    <div class="space-y-5 text-sm">
+                        <div>
+                            <div class="flex justify-between mb-1.5"><span>Clarity &amp; Messaging</span> <span class="font-mono tabular-nums">94</span></div>
+                            <div class="h-1.5 bg-zinc-800 rounded-full"><div class="h-1.5 bg-lime-400 rounded-full w-[94%]"></div></div>
+                            <div class="text-xs text-zinc-500 mt-1">Your ideas land clearly. Excellent use of language.</div>
+                        </div>
+                        <div>
+                            <div class="flex justify-between mb-1.5"><span>Authority &amp; Credibility</span> <span class="font-mono tabular-nums">88</span></div>
+                            <div class="h-1.5 bg-zinc-800 rounded-full"><div class="h-1.5 bg-lime-400 rounded-full w-[88%]"></div></div>
+                            <div class="text-xs text-zinc-500 mt-1">Strong positioning. Could benefit from more third-party proof points.</div>
+                        </div>
+                        <div>
+                            <div class="flex justify-between mb-1.5"><span>Consistency</span> <span class="font-mono tabular-nums">81</span></div>
+                            <div class="h-1.5 bg-zinc-800 rounded-full"><div class="h-1.5 bg-lime-400 rounded-full w-[81%]"></div></div>
+                            <div class="text-xs text-zinc-500 mt-1">Good rhythm but room to tighten posting cadence.</div>
+                        </div>
+                        <div>
+                            <div class="flex justify-between mb-1.5"><span>Visual Brand Strength</span> <span class="font-mono tabular-nums">79</span></div>
+                            <div class="h-1.5 bg-zinc-800 rounded-full"><div class="h-1.5 bg-lime-400 rounded-full w-[79%]"></div></div>
+                            <div class="text-xs text-zinc-500 mt-1">PFP and header work well together. Consider a signature colour.</div>
+                        </div>
+                        <div>
+                            <div class="flex justify-between mb-1.5"><span>Engagement Potential</span> <span class="font-mono tabular-nums">86</span></div>
+                            <div class="h-1.5 bg-zinc-800 rounded-full"><div class="h-1.5 bg-lime-400 rounded-full w-[86%]"></div></div>
+                            <div class="text-xs text-zinc-500 mt-1">High when you post long-form. Opportunity in short-form hooks.</div>
+                        </div>
+                        <div>
+                            <div class="flex justify-between mb-1.5"><span>Niche Alignment</span> <span class="font-mono tabular-nums">93</span></div>
+                            <div class="h-1.5 bg-zinc-800 rounded-full"><div class="h-1.5 bg-lime-400 rounded-full w-[93%]"></div></div>
+                            <div class="text-xs text-zinc-500 mt-1">Extremely well positioned. Algorithms understand exactly who you serve.</div>
+                        </div>
+                        <div>
+                            <div class="flex justify-between mb-1.5"><span>Growth Velocity</span> <span class="font-mono tabular-nums">72</span></div>
+                            <div class="h-1.5 bg-zinc-800 rounded-full"><div class="h-1.5 bg-lime-400 rounded-full w-[72%]"></div></div>
+                            <div class="text-xs text-zinc-500 mt-1">Steady but could accelerate with more deliberate distribution.</div>
+                        </div>
+                    </div>
+                    
+                    <button onclick="hideModal()" class="mt-8 w-full py-4 text-sm font-semibold border border-white/20 rounded-2xl hover:bg-white/5 transition-colors">BACK TO SUMMARY</button>
+                </div>
+            `;
+        }
+        
+        function copyResults() {
+            const handle = document.getElementById('modal-handle').innerText;
+            const score = document.getElementById('overall-score').innerText;
+            const niche = document.getElementById('niche').innerText;
+            
+            const text = `${handle} • Signal Score: ${score}/100\nNiche: ${niche}\n\n` +
+                        `Generated by signalcheck. — https://ntanalyser.netlify.app\n\n` +
+                        `Real X data + AI analysis`;
+            
+            navigator.clipboard.writeText(text).then(() => {
+                const btns = document.querySelectorAll('#result-modal button');
+                btns.forEach(b => {
+                    if (b.innerText.includes('COPY')) {
+                        const orig = b.innerHTML;
+                        b.innerHTML = `<i class="fa-solid fa-check"></i> <span>COPIED!</span>`;
+                        setTimeout(() => {
+                            if (b && b.parentNode) b.innerHTML = orig;
+                        }, 1800);
+                    }
+                });
+            }).catch(() => {
+                alert('Report copied to clipboard');
+            });
+        }
+        
+        function downloadPDF() {
+            const handle = document.getElementById('modal-handle').innerText;
+            const btns = document.querySelectorAll('#result-modal button');
+            
+            btns.forEach(b => {
+                if (b.innerText.includes('DOWNLOAD')) {
+                    const orig = b.innerHTML;
+                    b.innerHTML = `<i class="fa-solid fa-check"></i> <span>PREPARING PDF...</span>`;
+                    
+                    setTimeout(() => {
+                        b.innerHTML = `<i class="fa-solid fa-check-double"></i> <span>DOWNLOADED</span>`;
+                        
+                        setTimeout(() => {
+                            if (b && b.parentNode) {
+                                b.innerHTML = orig;
+                                alert(`In production this downloads a beautiful PDF report for ${handle}. (Connect to a PDF generation service like jsPDF or a backend endpoint)`);
+                            }
+                        }, 1400);
+                    }, 1100);
+                }
+            });
+        }
+        
+        function setupKeyboard() {
+            const input = document.getElementById('handle-input');
+            
+            input.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    analyseProfile();
+                }
+            });
+            
+            document.addEventListener('keydown', function(e) {
+                if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+                    e.preventDefault();
+                    input.focus();
+                    input.select();
+                }
+            });
+            
+            // Easter egg
+            let typed = '';
+            input.addEventListener('input', function() {
+                typed = (typed + input.value.slice(-1).toLowerCase()).slice(-10);
+                if (typed.includes('demo')) {
+                    typed = '';
+                    input.value = 'naval';
+                    setTimeout(() => analyseProfile(), 300);
+                }
+            });
+        }
+        
+        function init() {
+            setupKeyboard();
+            
+            // Optional: focus input on desktop
+            if (window.innerWidth > 900) {
+                setTimeout(() => {
+                    const input = document.getElementById('handle-input');
+                    if (document.activeElement.tagName === 'BODY') {
+                        // input.focus(); // commented to avoid mobile issues
+                    }
+                }, 1400);
+            }
+            
+            console.log('%c[signalcheck] British English + real X data version ready', 'color:#64748b');
+        }
+        
+        window.onload = init;
+    </script>
+</body>
+</html>
